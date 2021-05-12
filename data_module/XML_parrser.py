@@ -17,6 +17,6 @@ class XMLParser:
             if l != '\n':
                 d = l.strip().split(";")
                 r = d[0].strip().split(" ")
-                a.append([[float(r[i].split(",")[1])] for i in range(0, len(r))])
+                a.append([[float(r[i].split(",")[0])] for i in range(0, len(r))])
                 b.append(float(d[1]))
         return a, b

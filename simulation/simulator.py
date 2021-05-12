@@ -1,5 +1,6 @@
 import os, sys
 import random
+import tripGenerator
 from torch import nn
 import math
 from model.Siamese import Siamese
@@ -16,12 +17,12 @@ import matplotlib.pyplot as plt
 
 class Simulator:
 
-    def __init__(self, address='../dataset/test/v0.10', w=True):
+    def __init__(self, address='../dataset/test/memorial', w=True):
         self.step = 0
         self.end = 100000
         self.vehicles = 5
         sumoBinary = "sumo-gui"
-        sumoCmd = [sumoBinary, "-c", "/home/sepehr/PycharmProjects/DAD/simulation/config/simulation.xml", "--seed",
+        sumoCmd = [sumoBinary, "-c", "/home/sepehr/PycharmProjects/DAD/simulation/training/simulation.xml", "--seed",
                    '1']
         traci.start(sumoCmd)
 
@@ -33,6 +34,7 @@ class Simulator:
             self.s = [[], [], [], [], [], []]
             self.x = [[], [], [], [], [], []]
             self.y = [[], [], [], [], [], []]
+            self.t = ['', '', '', '', '']
         # self.model = Siamese.load_from_checkpoint(
         #     "../checkpoint/LSTMEncoderLSTM--v_num=00-epoch=00-validation_loss=0.53419-train_loss=0.00000.ckpt"
         # ).cuda()
@@ -42,7 +44,7 @@ class Simulator:
         self.run()
 
     def init_variables(self):
-        if self.step % 100 == 0:
+        if self.step % 300 == 0:
             if self.w:
                 self.write()
             self.round += 1
@@ -54,6 +56,7 @@ class Simulator:
             self.s = [[], [], [], [], [], []]
             self.x = [[], [], [], [], [], []]
             self.y = [[], [], [], [], [], []]
+            self.t = ['', '', '', '', '']
             self.max_speed = 0
             self.flag = False
 
@@ -65,14 +68,11 @@ class Simulator:
                 # dx2 = self.x[i][j - 1] - self.x[i][j - 2]
                 # l += f'{round(self.x[i][j], 3)},{round(dx, 4)},{round(dx2 - dx, 4)},{round(self.y[i][j], 3)},{round(self.s[i][j], 2)} '
                 l += f'{round(self.x[i][j], 3)},{round(self.y[i][j], 3)} '
-            if i != 0:
-                plt.plot(range(0, len(self.s[i])), self.s[i], label=f'Vehicle #{i + 1}')
-            else:
-                plt.plot(range(0, len(self.s[i])), self.s[i], label=f'Abnormal Vehicle')
+            plt.plot(range(0, len(self.s[i])), self.s[i], label=f'Vehicle #{i + 1}')
             self.file.write(l)
             self.file.write(';')
-            if self.flag:
-                self.file.write(str(self.id))
+            if 'abnormal' in self.t[i]:
+                self.file.write('1')
             else:
                 self.file.write('-1')
             self.file.write('\n')
@@ -80,7 +80,7 @@ class Simulator:
         # plt.ylim([-1, 10])
         plt.xlabel("time (s)")
         plt.ylabel("Speed (m/s)")
-        plt.show()
+        # plt.show()
 
     def log(self):
 
@@ -98,8 +98,16 @@ class Simulator:
                 x = traci.vehicle.getPosition(id)[0]
                 y = traci.vehicle.getPosition(id)[1]
                 s = traci.vehicle.getSpeed(id)
-                self.x[i].append(2 * ((x + 100) / (500)) - 1)
+                # x = traci.vehicle.getSpeedFactor(id)
+                self.t[i] = traci.vehicle.getTypeID(id)
+                # self.x[i].append(2 * ((x - 2790) / (3065 - 2790)) - 1) #edmonton
+                # self.y[i].append(2 * ((y - 2101) / (1380 - 2101)) - 1)
+                # self.x[i].append(2 * ((x - 368) / (2325 - 368)) - 1) #memorial
+                # self.y[i].append(2 * ((y - 754) / (1168 - 754)) - 1)
+
+                self.x[i].append(2 * ((x + 100) / (500)) - 1) #simple
                 self.y[i].append(2 * ((y - 290) / 10) - 1)
+
                 if s > 0.001:
                     self.s[i].append(s)
                 else:
@@ -112,37 +120,26 @@ class Simulator:
                 #      range(0, 5)])
 
     def over_speed(self):
-        if self.step % 100 == 20 and len(traci.vehicle.getIDList()) == self.vehicles:
+        if self.step % 300 == 20 and len(traci.vehicle.getIDList()) == self.vehicles:
             ids = traci.vehicle.getIDList()
             traci.vehicle.setColor(ids[self.id], (255, 0, 0))
-            # traci.vehicle.setSpeedMode(ids[0], 0)
+            traci.vehicle.setSpeedMode(ids[0], 0)
             traci.vehicle.setSpeedFactor(ids[0], traci.vehicle.getSpeedFactor(ids[self.id]) + 0.1)
             self.flag = True
 
     def speed_class(self):
-        if self.step % 100 == 20 and len(traci.vehicle.getIDList()) == self.vehicles:
+        if self.step % 300 == 20 and len(traci.vehicle.getIDList()) == self.vehicles:
             ids = traci.vehicle.getIDList()
-            traci.vehicle.setSpeedFactor(ids[0], traci.vehicle.getSpeedFactor(ids[0]) + 0.2)
-            traci.vehicle.setSpeedFactor(ids[1], traci.vehicle.getSpeedFactor(ids[1]) + 0.2)
-            traci.vehicle.setSpeedFactor(ids[2], traci.vehicle.getSpeedFactor(ids[2]) + 0.2)
-            traci.vehicle.setSpeedFactor(ids[3], traci.vehicle.getSpeedFactor(ids[3]) + 0.2)
-            traci.vehicle.setSpeedFactor(ids[4], traci.vehicle.getSpeedFactor(ids[4]) + 0.2)
+            traci.vehicle.setSpeedMode(ids[0], 0)
+            traci.vehicle.setColor(ids[self.id], (255, 0, 0))
             self.flag = True
 
     def under_speed(self):
-        if self.step % 100 == 30 and len(traci.vehicle.getIDList()) == self.vehicles:
+        if self.step % 300 == 20 and len(traci.vehicle.getIDList()) == self.vehicles:
             ids = traci.vehicle.getIDList()
             traci.vehicle.setColor(ids[self.id], (255, 0, 0))
-            traci.vehicle.setSpeedFactor(ids[0], traci.vehicle.getSpeedFactor(ids[0]) - 0.2)
-            traci.vehicle.setSpeedFactor(ids[1], traci.vehicle.getSpeedFactor(ids[1]) - 0.2)
-            traci.vehicle.setSpeedFactor(ids[2], traci.vehicle.getSpeedFactor(ids[2]) - 0.2)
-            traci.vehicle.setSpeedFactor(ids[3], traci.vehicle.getSpeedFactor(ids[3]) - 0.2)
-            traci.vehicle.setSpeedFactor(ids[4], traci.vehicle.getSpeedFactor(ids[4]) - 0.2)
             # traci.vehicle.setSpeedMode(ids[0], 0)
-            # traci.vehicle.setSpeedMode(ids[1], 0)
-            # traci.vehicle.setSpeedMode(ids[2], 0)
-            # traci.vehicle.setSpeedMode(ids[3], 0)
-            # traci.vehicle.setSpeedMode(ids[4], 0)
+            traci.vehicle.setSpeedFactor(ids[0], traci.vehicle.getSpeedFactor(ids[self.id]) - 0.3)
             self.flag = True
 
     def lane_anomaly(self):
@@ -273,8 +270,10 @@ class Simulator:
             # self.speed_class()
             # r = random.randint(0, 10)
             # if r == 2 or r == 4 or r == 6:
-            self.over_speed()
-
+            #     self.over_speed()
+            for id in traci.vehicle.getIDList():
+                if 'abnormal' in traci.vehicle.getTypeID(id):
+                    traci.vehicle.setSpeedMode(id, 0)
             # if r == 1:
             # elif r == 3:
             #     self.speed_class()

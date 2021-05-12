@@ -19,7 +19,7 @@ def main(hparams):
     datamodule = DrivingDataMadule(ds, 5800, 176, 10000)
 
     for filename in os.listdir("checkpoint"):
-        if filename in ["b20l10d15"]:
+        if filename in ["b20l10d152"]:
             for c in os.listdir(f'checkpoint/{filename}/checkpoints'):
                 print(f'{filename}/{c}')
                 bottelNeck = int(re.search(r"b(.*?)l", filename).group(1))

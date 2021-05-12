@@ -7,9 +7,9 @@
                xsi:noNamespaceSchemaLocation="http://sumo.dlr.de/xsd/sumoConfiguration.xsd">
 
     <input>
-        <net-file value="/home/sepehr/PycharmProjects/DAD/simulation/config/network2.xml"/>
+        <net-file value="/home/sepehr/PycharmProjects/DAD/simulation/training/network2.xml"/>
         <route-files
-                value="/home/sepehr/PycharmProjects/DAD/simulation/config/trips1.xml"/>
+                value="/home/sepehr/PycharmProjects/DAD/simulation/training/trips1.xml"/>
     </input>
 
     <processing>

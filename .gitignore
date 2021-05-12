@@ -129,5 +129,5 @@ dmypy.json
 .pyre/
 .idea/
 /lightning_logs/
-/dataset/
+/result/
 slum*
