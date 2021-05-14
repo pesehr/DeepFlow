@@ -30,7 +30,7 @@ def main(hparams):
                                  callbacks=[checkpoint_callback],
                                  num_nodes=1)
             trainer.fit(model=model, datamodule=datamodule)
-        elif filename in ["b20l10d15"]:
+        elif filename in ["b10l10d9"]:
             for c in os.listdir(f'checkpoint/{filename}/checkpoints'):
                 print(f'{filename}/{c}')
                 bottelNeck = int(re.search(r"b(.*?)l", filename).group(1))
