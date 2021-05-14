@@ -9,7 +9,7 @@ from model.LSTM import LSTM
 
 
 class Siamese(LSTM):
-    def __init__(self, hidden_layer_size=100, battle_neck=20, feature_len=1, observe_len=5, label_len=1,
+    def __init__(self, hidden_layer_size=100, battle_neck=10, feature_len=1, observe_len=5, label_len=1,
                  objects_len=5,
                  lamda=10,
                  d=device('cuda'), *args,
@@ -27,7 +27,7 @@ class Siamese(LSTM):
         # self.observe_len = observe_len
         self.label_len = label_len
         self.objects_len = objects_len
-        self.similarity = nn.CosineSimilarity(dim=0, eps=1e-2)
+        self.similarity = nn.CosineSimilarity(dim=0, eps=1e-7)
 
     def forward(self, batch):
         # LSTM 1
@@ -115,7 +115,8 @@ class Siamese(LSTM):
                 if i != j:
                     l = self.similarity(decoded[i][0][0], decoded[j][0][0])
                     # l = self.similarity(batch[0][0][j][0][:min], batch[0][0][i][0][:min])
-                    loss += -1 * l + 1.0
+                    # loss += l
+                    loss += -l + 1
             o.append(loss)
 
         # std = np.std(np.array(o))
@@ -126,4 +127,5 @@ class Siamese(LSTM):
             o[i] = ((o[i] - std) / mean).item()
 
         for i in range(0, self.objects_len):
-            self.evaluation_data.append((o[i], 1 if batch[1][i].item() == 1 else 0))
+            self.evaluation_data.append((o[i], 1 if batch[1][i] == 1 else 0))
+        # self.evaluation_data.append(((1 - (sum(o) / 20).item())*10e5, 1 if sum(batch[1]).item() > -5 else 0))

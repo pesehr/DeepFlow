@@ -65,9 +65,9 @@ class DrivingDataset(Dataset):
 class DrivingDataMadule(pl.LightningDataModule):
     def __init__(self, version, train_len, validate_len, test_len, observe_len=5, label_len=1):
         super().__init__()
-        self.train_dataset_address = os.path.realpath('.') + f'/dataset/train/{version}'
+        self.train_dataset_address = os.path.realpath('.') + f'/dataset/train2/{version}'
         self.test_dataset_address = os.path.realpath('.') + f'/dataset/test/{version}'
-        self.validation_dataset_address = os.path.realpath('.') + f'/dataset/train/{version}'
+        self.validation_dataset_address = os.path.realpath('.') + f'/dataset/train2/{version}'
         self.train_len = train_len
         self.validate_len = validate_len
         self.test_len = test_len

@@ -17,12 +17,12 @@ import matplotlib.pyplot as plt
 
 class Simulator:
 
-    def __init__(self, address='../dataset/test/memorial', w=True):
+    def __init__(self, address='../dataset/test/test', w=True):
         self.step = 0
         self.end = 100000
         self.vehicles = 5
         sumoBinary = "sumo-gui"
-        sumoCmd = [sumoBinary, "-c", "/home/sepehr/PycharmProjects/DAD/simulation/training/simulation.xml", "--seed",
+        sumoCmd = [sumoBinary, "-c", "/home/sepehr/PycharmProjects/DAD/simulation/training/simulation2.xml", "--seed",
                    '1']
         traci.start(sumoCmd)
 
@@ -41,6 +41,12 @@ class Simulator:
         self.round = -1
         self.similarity = nn.CosineSimilarity(dim=0, eps=1e-6)
         self.max_speed = 0
+
+        self.min_x = 100000
+        self.max_x = -10000
+        self.min_y = 100000
+        self.max_y = -10000
+
         self.run()
 
     def init_variables(self):
@@ -67,7 +73,7 @@ class Simulator:
                 # dx = self.x[i][j] - self.x[i][j - 1]
                 # dx2 = self.x[i][j - 1] - self.x[i][j - 2]
                 # l += f'{round(self.x[i][j], 3)},{round(dx, 4)},{round(dx2 - dx, 4)},{round(self.y[i][j], 3)},{round(self.s[i][j], 2)} '
-                l += f'{round(self.x[i][j], 3)},{round(self.y[i][j], 3)} '
+                l += f'{round(self.x[i][j], 5)},{round(self.y[i][j], 5)} '
             plt.plot(range(0, len(self.s[i])), self.s[i], label=f'Vehicle #{i + 1}')
             self.file.write(l)
             self.file.write(';')
@@ -80,51 +86,52 @@ class Simulator:
         # plt.ylim([-1, 10])
         plt.xlabel("time (s)")
         plt.ylabel("Speed (m/s)")
-        # plt.show()
+        plt.show()
 
     def log(self):
-
-        # if len(traci.vehicle.getIDList()) > 0:
-        #     if traci.vehicle.getTypeID(traci.vehicle.getIDList()[0]) == 'veh_passenger1':
-        #         self.max_speed = 14.89 * 1
-        #     elif traci.vehicle.getTypeID(traci.vehicle.getIDList()[0]) == 'veh_passenger2':
-        #         self.max_speed = 14.89 * 0.8
-        #     elif traci.vehicle.getTypeID(traci.vehicle.getIDList()[0]) == 'veh_passenger3':
-        #         self.max_speed = 14.89 * 0.6
-
+        # if self.step == self.end - 1:
+        #     print(f'{self.min_x} {self.max_x} {self.min_y} {self.max_y}')
         for i in range(0, self.vehicles):
             id = f'veh{self.round * 10 + i}'
             if id in traci.vehicle.getIDList():
                 x = traci.vehicle.getPosition(id)[0]
                 y = traci.vehicle.getPosition(id)[1]
                 s = traci.vehicle.getSpeed(id)
-                # x = traci.vehicle.getSpeedFactor(id)
+
                 self.t[i] = traci.vehicle.getTypeID(id)
-                # self.x[i].append(2 * ((x - 2790) / (3065 - 2790)) - 1) #edmonton
-                # self.y[i].append(2 * ((y - 2101) / (1380 - 2101)) - 1)
-                # self.x[i].append(2 * ((x - 368) / (2325 - 368)) - 1) #memorial
-                # self.y[i].append(2 * ((y - 754) / (1168 - 754)) - 1)
+                # self.x[i].append(self.normalize(x, 2331.069758335272, 331.6160350313303)) #memorial
+                # self.y[i].append(self.normalize(y, 1557.7461908018008, 736.1227529386199))
 
-                self.x[i].append(2 * ((x + 100) / (500)) - 1) #simple
-                self.y[i].append(2 * ((y - 290) / 10) - 1)
+                self.x[i].append(self.normalize(x, 3065.339689905422, 2772.2621071169474)) #edmonton
+                self.y[i].append(self.normalize(y, 2131.654558026798, 1363.8048687718222))
 
+
+                # if x < self.min_x:
+                #     self.min_x = x
+                # if x > self.max_x:
+                #     self.max_x = x
+                # if y < self.min_y:
+                #     self.min_y = y
+                # if y > self.max_y:
+                #     self.max_y = y
+
+                # self.x[i].append(-(2 * ((x - 545.945) / (2152.780 - 545.945)) - 1))  # 9ave
+                # self.y[i].append(2 * ((y - 449.112) / (464.02 - 449.112)) - 1)
                 if s > 0.001:
                     self.s[i].append(s)
                 else:
                     self.s[i].append(0)
-                # self.x.append(
-                #     [(traci.vehicle.getPosition(traci.vehicle.getIDList()[i])[0] + 41.12) / (965.07 + 41.12) for i in
-                #      range(0, 5)])
-                # self.y.append(
-                #     [(traci.vehicle.getPosition(traci.vehicle.getIDList()[i])[1] - 44.20) / (50.60 - 44.20) for i in
-                #      range(0, 5)])
 
     def over_speed(self):
         if self.step % 300 == 20 and len(traci.vehicle.getIDList()) == self.vehicles:
             ids = traci.vehicle.getIDList()
             traci.vehicle.setColor(ids[self.id], (255, 0, 0))
-            traci.vehicle.setSpeedMode(ids[0], 0)
-            traci.vehicle.setSpeedFactor(ids[0], traci.vehicle.getSpeedFactor(ids[self.id]) + 0.1)
+            # traci.vehicle.setSpeedMode(ids[0], 0)
+            traci.vehicle.setSpeedFactor(ids[0], traci.vehicle.getSpeedFactor(ids[0]) - 0.1)
+            traci.vehicle.setSpeedFactor(ids[1], traci.vehicle.getSpeedFactor(ids[1]) - 0.1)
+            traci.vehicle.setSpeedFactor(ids[2], traci.vehicle.getSpeedFactor(ids[2]) - 0.1)
+            traci.vehicle.setSpeedFactor(ids[3], traci.vehicle.getSpeedFactor(ids[3]) - 0.1)
+            traci.vehicle.setSpeedFactor(ids[4], traci.vehicle.getSpeedFactor(ids[4]) - 0.1)
             self.flag = True
 
     def speed_class(self):
@@ -161,104 +168,7 @@ class Simulator:
         #     traci.vehicle.changeLane(ids[ple], (traci.vehicle.getLaneIndex(ids[ple]) + 1 + random.randint(0, 1)) % 3, 2)
 
     def normalize(self, d, max, min):
-        return d
-
-    def detect(self):
-        if len(self.x) >= 7 and len(traci.vehicle.getIDList()) == self.vehicles:
-            i = len(self.x) - 7
-
-            # min_x, min_y, min_d_x, min_d_y, min_dd_x, min_dd_y = 1000, 1000, 1000, 1000, 1000, 1000
-            # max_x, max_y, max_d_x, max_d_y, max_dd_x, max_dd_y = -1000, -1000, -1000, -1000, -1000, -1000
-            # for j in range(i + 2, i + 7):
-            #     for k in range(0, 5):
-            #         if max_x < self.x[j][k]:
-            #             max_x = self.x[j][k]
-            #         if min_x > self.x[j][k]:
-            #             min_x = self.x[j][k]
-            #         if max_d_x < self.x[j][k] - self.x[j - 1][k]:
-            #             max_d_x = self.x[j][k] - self.x[j - 1][k]
-            #         if min_d_x > self.x[j][k] - self.x[j - 1][k]:
-            #             min_d_x = self.x[j][k] - self.x[j - 1][k]
-            #         if max_dd_x < (self.x[j][k] - self.x[j - 1][k]) - (self.x[j - 1][k] - self.x[j - 2][k]):
-            #             max_dd_x = (self.x[j][k] - self.x[j - 1][k]) - (self.x[j - 1][k] - self.x[j - 2][k])
-            #         if min_dd_x > (self.x[j][k] - self.x[j - 1][k]) - (self.x[j - 1][k] - self.x[j - 2][k]):
-            #             min_dd_x = (self.x[j][k] - self.x[j - 1][k]) - (self.x[j - 1][k] - self.x[j - 2][k])
-            #
-            #         if max_y < self.y[j][k]:
-            #             max_y = self.y[j][k]
-            #         if min_y > self.y[j][k]:
-            #             min_y = self.y[j][k]
-            #         if max_d_y < self.y[j][k] - self.y[j - 1][k]:
-            #             max_d_y = self.y[j][k] - self.y[j - 1][k]
-            #         if min_d_y > self.y[j][k] - self.y[j - 1][k]:
-            #             min_d_y = self.y[j][k] - self.y[j - 1][k]
-            #         if max_dd_y < (self.y[j][k] - self.y[j - 1][k]) - (self.y[j - 1][k] - self.y[j - 2][k]):
-            #             max_dd_y = (self.y[j][k] - self.y[j - 1][k]) - (self.y[j - 1][k] - self.y[j - 2][k])
-            #         if min_dd_y > (self.y[j][k] - self.y[j - 1][k]) - (self.y[j - 1][k] - self.y[j - 2][k]):
-            #             min_dd_y = (self.y[j][k] - self.y[j - 1][k]) - (self.y[j - 1][k] - self.y[j - 2][k])
-            seq = []
-            for j in range(i + 2, i + 7):
-                seq.append([
-                    [self.normalize((self.x[j][k] - self.x[j - 1][k]) - (self.x[j - 1][k] - self.x[j - 2][k]), max_dd_x,
-                                    min_dd_x)
-                     for k in
-                     range(0, self.vehicles)],
-                    [self.normalize(self.x[j][k] - self.x[j - 1][k], max_d_x,
-                                    min_d_x)
-                     for k in
-                     range(0, self.vehicles)],
-                    [self.normalize(self.x[j][k], max_x, min_x)
-                     for k in
-                     range(0, self.vehicles)],
-                    [self.normalize((self.y[j][k] - self.y[j - 1][k]) - (self.y[j - 1][k] - self.y[j - 2][k]), max_dd_y,
-                                    min_dd_y)
-                     for k in
-                     range(0, self.vehicles)],
-                    [self.normalize(self.y[j][k] - self.y[j - 1][k], max_d_y,
-                                    min_d_y)
-                     for k in
-                     range(0, self.vehicles)],
-                    [self.normalize(self.y[j][k], max_y, min_y)
-                     for k in
-                     range(0, self.vehicles)],
-                ])
-            seq = tensor(seq, device=device('cuda'))
-            decoded = []
-            for j in range(0, self.vehicles):
-                list = [[seq[i][k][j].item() for k in range(0, 6)] for i in
-                        range(0, self.vehicles)]
-                list = tensor(list, device=device('cuda'))
-                ـ, d = self.model(list)
-                decoded.append(d[0][0])
-
-            for i in range(0, self.vehicles):
-                loss2 = 0
-                for j in range(0, self.vehicles):
-                    if i != j:
-                        l = self.similarity(decoded[i], decoded[j])
-                        l = (-1 * l) + 1
-                        loss2 += l
-                loss2 /= 4
-                ids = traci.vehicle.getIDList()
-                if loss2 >= 0.0036:
-                    traci.vehicle.highlight(ids[i], color=(255, 0, 0))
-                else:
-                    traci.vehicle.highlight(ids[i], color=(0, 255, 0))
-
-    def no_stop(self):
-        if len(traci.vehicle.getIDList()) == self.vehicles:
-            ids = traci.vehicle.getIDList()
-            # for i in ids:
-            #     if traci.vehicle.getPosition(i)[0] > 918:
-            #         if i != ids[self.id] or (i == ids[self.id] and self.id == -1):
-            #             traci.vehicle.setMaxSpeed(i, 13.89)
-            #         else:
-            #             self.flag = True
-            traci.vehicle.setSpeedMode(ids[0], 0)
-            traci.vehicle.setSpeedMode(ids[1], 0)
-            traci.vehicle.setSpeedMode(ids[2], 0)
-            traci.vehicle.setSpeedMode(ids[3], 0)
-            traci.vehicle.setSpeedMode(ids[4], 0)
+        return 2 * ((d - min) / (max - min)) - 1
 
     def run(self):
         while self.step < self.end:
@@ -271,9 +181,9 @@ class Simulator:
             # r = random.randint(0, 10)
             # if r == 2 or r == 4 or r == 6:
             #     self.over_speed()
-            for id in traci.vehicle.getIDList():
-                if 'abnormal' in traci.vehicle.getTypeID(id):
-                    traci.vehicle.setSpeedMode(id, 0)
+            # for id in traci.vehicle.getIDList():
+            #     if 'abnormal' in traci.vehicle.getTypeID(id):
+            #         traci.vehicle.setSpeedMode(id, 0)
             # if r == 1:
             # elif r == 3:
             #     self.speed_class()

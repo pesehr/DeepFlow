@@ -74,7 +74,7 @@ for g in graph:
             d, e = record
             try:
                 if g != "DTW":
-                    pred.append(1 if d > error else 0)
+                    pred.append(1 if d/1000 > error else 0)
                 else:
                     pred.append(1 if 4 - d > error else 0)
             except:
