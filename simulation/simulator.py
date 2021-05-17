@@ -17,12 +17,12 @@ import matplotlib.pyplot as plt
 
 class Simulator:
 
-    def __init__(self, address='../dataset/test/test', w=True):
+    def __init__(self, address='../dataset/train/normal-stop', w=True):
         self.step = 0
         self.end = 100000
         self.vehicles = 5
         sumoBinary = "sumo-gui"
-        sumoCmd = [sumoBinary, "-c", "/home/sepehr/PycharmProjects/DAD/simulation/training/simulation2.xml", "--seed",
+        sumoCmd = [sumoBinary, "-c", "/home/sepehr/PycharmProjects/DAD/simulation/training/simulation.xml", "--seed",
                    '1']
         traci.start(sumoCmd)
 
@@ -86,7 +86,7 @@ class Simulator:
         # plt.ylim([-1, 10])
         plt.xlabel("time (s)")
         plt.ylabel("Speed (m/s)")
-        plt.show()
+        # plt.show()
 
     def log(self):
         # if self.step == self.end - 1:
@@ -102,10 +102,15 @@ class Simulator:
                 # self.x[i].append(self.normalize(x, 2331.069758335272, 331.6160350313303)) #memorial
                 # self.y[i].append(self.normalize(y, 1557.7461908018008, 736.1227529386199))
 
-                self.x[i].append(self.normalize(x, 3065.339689905422, 2772.2621071169474)) #edmonton
-                self.y[i].append(self.normalize(y, 2131.654558026798, 1363.8048687718222))
+                # self.x[i].append(self.normalize(x, 3065.339689905422, 2772.2621071169474)) #edmonton
+                # self.y[i].append(self.normalize(y, 2131.654558026798, 1363.8048687718222))
 
+                # self.x[i].append(self.normalize(x, 3065.339689905422, 2772.2621071169474)) #edmonton
+                # self.y[i].append(self.normalize(y, 2131.654558026798, 1363.8048687718222))
 
+                self.x[i].append(self.normalize(x, 599.9004098356795, -195.0734))  # train
+                self.y[i].append(self.normalize(y, 292.0, 298.4))
+                #
                 # if x < self.min_x:
                 #     self.min_x = x
                 # if x > self.max_x:
@@ -123,15 +128,15 @@ class Simulator:
                     self.s[i].append(0)
 
     def over_speed(self):
-        if self.step % 300 == 20 and len(traci.vehicle.getIDList()) == self.vehicles:
+        if self.step % 300 == 50 and len(traci.vehicle.getIDList()) == self.vehicles:
             ids = traci.vehicle.getIDList()
             traci.vehicle.setColor(ids[self.id], (255, 0, 0))
             # traci.vehicle.setSpeedMode(ids[0], 0)
-            traci.vehicle.setSpeedFactor(ids[0], traci.vehicle.getSpeedFactor(ids[0]) - 0.1)
-            traci.vehicle.setSpeedFactor(ids[1], traci.vehicle.getSpeedFactor(ids[1]) - 0.1)
-            traci.vehicle.setSpeedFactor(ids[2], traci.vehicle.getSpeedFactor(ids[2]) - 0.1)
-            traci.vehicle.setSpeedFactor(ids[3], traci.vehicle.getSpeedFactor(ids[3]) - 0.1)
-            traci.vehicle.setSpeedFactor(ids[4], traci.vehicle.getSpeedFactor(ids[4]) - 0.1)
+            traci.vehicle.setSpeedFactor(ids[0], traci.vehicle.getSpeedFactor(ids[0]) + 0.2)
+            traci.vehicle.setSpeedFactor(ids[1], traci.vehicle.getSpeedFactor(ids[1]) + 0.2)
+            traci.vehicle.setSpeedFactor(ids[2], traci.vehicle.getSpeedFactor(ids[2]) + 0.2)
+            traci.vehicle.setSpeedFactor(ids[3], traci.vehicle.getSpeedFactor(ids[3]) + 0.2)
+            traci.vehicle.setSpeedFactor(ids[4], traci.vehicle.getSpeedFactor(ids[4]) + 0.2)
             self.flag = True
 
     def speed_class(self):
@@ -180,7 +185,7 @@ class Simulator:
             # self.speed_class()
             # r = random.randint(0, 10)
             # if r == 2 or r == 4 or r == 6:
-            #     self.over_speed()
+            # self.over_speed()
             # for id in traci.vehicle.getIDList():
             #     if 'abnormal' in traci.vehicle.getTypeID(id):
             #         traci.vehicle.setSpeedMode(id, 0)
