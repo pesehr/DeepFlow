@@ -42,7 +42,7 @@ def main(hparams):
                     battle_neck=bottelNeck, lamda=lamda
                 )
 
-                trainer = pl.Trainer(gpus=1, max_epochs=100, accelerator='dp',
+                trainer = pl.Trainer(gpus=-1, max_epochs=100, accelerator='dp',
                                      callbacks=[LSTMCallback(name=f'b{bottelNeck}l{lamda}{ds.group()}')],
                                      num_nodes=1)
                 trainer.test(model=model, test_dataloaders=datamodule.test_dataloader())

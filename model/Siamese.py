@@ -73,12 +73,12 @@ class Siamese(LSTM):
 
     def training_step(self, batch, batch_idx):
         loss = self.validation(batch)
-        self.log('train_loss', loss, on_step=False, on_epoch=True, prog_bar=True, logger=True)
+        self.log('train_loss', loss, on_step=False, on_epoch=True, prog_bar=True, logger=True, sync_dist=True)
         return loss
 
     def validation_step(self, batch, batch_idx):
         loss = self.validation(batch)
-        self.log('validation_loss', loss, on_step=False, on_epoch=True, prog_bar=True, logger=True)
+        self.log('validation_loss', loss, on_step=False, on_epoch=True, prog_bar=True, logger=True, sync_dist=True)
         return loss
 
     def test_step(self, batch, batch_idx):
