@@ -17,12 +17,12 @@ import matplotlib.pyplot as plt
 
 class Simulator:
 
-    def __init__(self, address='../dataset/train/normal-stop', w=True):
+    def __init__(self, address='../dataset/test/memorial-dec', w=True):
         self.step = 0
         self.end = 100000
         self.vehicles = 5
         sumoBinary = "sumo-gui"
-        sumoCmd = [sumoBinary, "-c", "/home/sepehr/PycharmProjects/DAD/simulation/training/simulation.xml", "--seed",
+        sumoCmd = [sumoBinary, "-c", "/home/sepehr/PycharmProjects/DAD/simulation/training/simulation2.xml", "--seed",
                    '1']
         traci.start(sumoCmd)
 
@@ -99,18 +99,15 @@ class Simulator:
                 s = traci.vehicle.getSpeed(id)
 
                 self.t[i] = traci.vehicle.getTypeID(id)
-                # self.x[i].append(self.normalize(x, 2331.069758335272, 331.6160350313303)) #memorial
-                # self.y[i].append(self.normalize(y, 1557.7461908018008, 736.1227529386199))
+                self.x[i].append(self.normalize(x, 2331.069758335272, 331.6160350313303)) #memorial
+                self.y[i].append(self.normalize(y, 1557.7461908018008, 736.1227529386199))
 
                 # self.x[i].append(self.normalize(x, 3065.339689905422, 2772.2621071169474)) #edmonton
                 # self.y[i].append(self.normalize(y, 2131.654558026798, 1363.8048687718222))
 
-                # self.x[i].append(self.normalize(x, 3065.339689905422, 2772.2621071169474)) #edmonton
-                # self.y[i].append(self.normalize(y, 2131.654558026798, 1363.8048687718222))
+                # self.x[i].append(self.normalize(x, 599.9004098356795, -195.0734))  # train
+                # self.y[i].append(self.normalize(y, 292.0, 298.4))
 
-                self.x[i].append(self.normalize(x, 599.9004098356795, -195.0734))  # train
-                self.y[i].append(self.normalize(y, 292.0, 298.4))
-                #
                 # if x < self.min_x:
                 #     self.min_x = x
                 # if x > self.max_x:

@@ -2,8 +2,8 @@ import random
 
 # streets = ['gneE6', 'gneE16', 'gneE15']
 g = [5, 10, 15]
-# f = open("./calgary/osm.passenger.trips.xml", "w")
-f = open("./training/trips1.xml", "w")
+f = open("./calgary/osm.passenger.trips.xml", "w")
+# f = open("./training/trips1.xml", "w")
 k = 0
 streets = [1, 3, 5, 7]
 f.write("<routes xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n")
@@ -37,11 +37,11 @@ for i in range(0, 360000, 300):
     c = random.randint(1, 3)
 
     for j in range(0, 5):
-        cl = f'veh_passenger{c}'
-        _from = 'gneE2'
-        _to = 'gneE3'
-        # if j == a:
-        #     cl = 'abnormal1'
+        cl = f'veh_passenger{1}'
+        _from = 'calgary1'
+        _to = 'calgary2'
+        if j == a:
+            cl = 'abnormal2'
         f.write(
             f'<trip id=\"veh{k * 10 + j}\"  type=\"{cl}\" depart=\"{i + j * 3}.00\"  departLane=\"random\" departSpeed=\"max\" from=\"{_from}\" to=\"{_to}\" />\n')
     k += 1
