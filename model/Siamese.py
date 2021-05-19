@@ -68,7 +68,7 @@ class Siamese(LSTM):
                 if i != j:
                     l = self.similarity(decoded[i], decoded[j])
                     loss2 += (-l + 1)
-        loss = loss + (loss2 / self.lamda)
+        loss = loss + (loss2 * self.lamda)
         return loss
 
     def training_step(self, batch, batch_idx):
@@ -105,8 +105,11 @@ class Siamese(LSTM):
         #     self.evaluation_data.append((-i[j], 1 if batch[1].item() == j else 0))
 
         decoded = []
+        l1 = []
         for j in range(0, self.objects_len):
             o, d = self(batch[0][0][j])
+            l1.append(self.loss_function(batch[0][0][j][0].view(self.feature_len * len(batch[0][0][j][0])),
+                                         cat(o).view(self.feature_len * len(batch[0][0][j][0]))).item())
             decoded.append(d)
         o = []
         for i in range(0, self.objects_len):
@@ -123,9 +126,13 @@ class Siamese(LSTM):
         # mean = np.mean(np.array(o))
         std = torch.std(tensor([o[j].item() for j in range(0, len(o))]))
         mean = torch.mean(tensor([o[j].item() for j in range(0, len(o))]))
+        mino = min(o)
+        maxo = max(o)
         for i in range(0, self.objects_len):
             o[i] = ((o[i] - std) / mean).item()
+            # o[i] = o[i].item()
+            # o[i] = ((o[i] - mino) / (maxo - mino)).item()
 
         for i in range(0, self.objects_len):
             self.evaluation_data.append((o[i], 1 if batch[1][i] == 1 else 0))
-        # self.evaluation_data.append(((1 - (sum(o) / 20).item())*10e5, 1 if sum(batch[1]).item() > -5 else 0))
+        # self.evaluation_data.append((4-sum(o), 1 if sum(batch[1]).item() > -5 else 0))

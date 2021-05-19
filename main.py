@@ -26,11 +26,11 @@ def main(hparams):
                 filename='LSTMEncoderLSTM--{v_num:02d}-{epoch:02d}-{validation_loss:.9f}-{train_loss:.5f}',
             )
             early_callback = EarlyStopping(monitor='validation_loss')
-            trainer = pl.Trainer(gpus=1, max_epochs=100, accelerator='dp',
+            trainer = pl.Trainer(gpus=-1, max_epochs=100,
                                  callbacks=[checkpoint_callback],
                                  num_nodes=1)
             trainer.fit(model=model, datamodule=datamodule)
-        elif filename in ["b10l10d9"]:
+        elif filename in ["b20l10d1"]:
             for c in os.listdir(f'checkpoint/{filename}/checkpoints'):
                 print(f'{filename}/{c}')
                 bottelNeck = int(re.search(r"b(.*?)l", filename).group(1))
