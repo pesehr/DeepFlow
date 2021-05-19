@@ -18,35 +18,35 @@ def main(hparams):
     print(bottelNeck, lamda, ds, test)
     datamodule = DrivingDataMadule(ds, 5800, 176, 10000)
 
-        if not test:
-            model = Siamese(battle_neck=bottelNeck, lamda=lamda)
-            checkpoint_callback = ModelCheckpoint(
-                monitor='validation_loss',
-                filename='LSTMEncoderLSTM--{v_num:02d}-{epoch:02d}-{validation_loss:.9f}-{train_loss:.5f}',
-            )
-            early_callback = EarlyStopping(monitor='validation_loss')
-            trainer = pl.Trainer(gpus=-1, max_epochs=100,
-                                 callbacks=[checkpoint_callback],
-                                 num_nodes=1)
-            trainer.fit(model=model, datamodule=datamodule)
-        else:
-            for filename in os.listdir("checkpoint"):
-                if filename in ["b20l10d1"]:
-                    for c in os.listdir(f'checkpoint/{filename}/checkpoints'):
-                        print(f'{filename}/{c}')
-                        bottelNeck = int(re.search(r"b(.*?)l", filename).group(1))
-                        lamda = float(re.search(r"l(.*?)d", filename).group(1))
-                        ds = re.search(r"d(.*?).", filename)
+    if not test:
+        model = Siamese(battle_neck=bottelNeck, lamda=lamda)
+        checkpoint_callback = ModelCheckpoint(
+            monitor='validation_loss',
+            filename='LSTMEncoderLSTM--{v_num:02d}-{epoch:02d}-{validation_loss:.9f}-{train_loss:.5f}',
+        )
+        early_callback = EarlyStopping(monitor='validation_loss')
+        trainer = pl.Trainer(gpus=-1, max_epochs=100,
+                             callbacks=[checkpoint_callback],
+                             num_nodes=1)
+        trainer.fit(model=model, datamodule=datamodule)
+    else:
+        for filename in os.listdir("checkpoint"):
+            if filename in ["b20l10d1"]:
+                for c in os.listdir(f'checkpoint/{filename}/checkpoints'):
+                    print(f'{filename}/{c}')
+                    bottelNeck = int(re.search(r"b(.*?)l", filename).group(1))
+                    lamda = float(re.search(r"l(.*?)d", filename).group(1))
+                    ds = re.search(r"d(.*?).", filename)
 
-                        model = Siamese.load_from_checkpoint(
-                            f'checkpoint/{filename}/checkpoints/{c}',
-                            battle_neck=bottelNeck, lamda=lamda
-                        )
+                    model = Siamese.load_from_checkpoint(
+                        f'checkpoint/{filename}/checkpoints/{c}',
+                        battle_neck=bottelNeck, lamda=lamda
+                    )
 
-                        trainer = pl.Trainer(gpus=-1, max_epochs=100, accelerator='dp',
-                                     callbacks=[LSTMCallback(name=f'b{bottelNeck}l{lamda}{ds.group()}')],
-                                     num_nodes=1)
-                        trainer.test(model=model, test_dataloaders=datamodule.test_dataloader())
+                    trainer = pl.Trainer(gpus=-1, max_epochs=100, accelerator='dp',
+                                         callbacks=[LSTMCallback(name=f'b{bottelNeck}l{lamda}{ds.group()}')],
+                                         num_nodes=1)
+                    trainer.test(model=model, test_dataloaders=datamodule.test_dataloader())
 
 
 if __name__ == '__main__':

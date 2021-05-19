@@ -9,7 +9,7 @@ from model.LSTM import LSTM
 
 
 class Siamese(LSTM):
-    def __init__(self, hidden_layer_size=100, battle_neck=10, feature_len=1, observe_len=5, label_len=1,
+    def __init__(self, hidden_layer_size=100, battle_neck=10, feature_len=2, observe_len=5, label_len=1,
                  objects_len=5,
                  lamda=10,
                  d=device('cuda'), *args,
@@ -68,7 +68,7 @@ class Siamese(LSTM):
                 if i != j:
                     l = self.similarity(decoded[i], decoded[j])
                     loss2 += (-l + 1)
-        loss = loss + (loss2 * self.lamda)
+        loss = loss + (loss2 / self.lamda)
         return loss
 
     def training_step(self, batch, batch_idx):
