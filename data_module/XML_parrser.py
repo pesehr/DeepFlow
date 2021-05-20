@@ -18,8 +18,8 @@ class XMLParser:
                 d = l.strip().split(";")
                 r = d[0].strip().split(" ")
                 a.append(
-                    [[float(r[i].split(",")[0]),
-                      float(r[i].split(",")[0]) - float(r[i - 1].split(",")[0]) if i > 0 else 0]
+                    [[float(r[i].split(",")[0])]
+                     # float(r[i].split(",")[0]) - float(r[i - 1].split(",")[0]) if i > 0 else 0]
                      for i in
                      range(0, len(r))])
                 b.append(float(d[1]))
