@@ -17,7 +17,7 @@ import matplotlib.pyplot as plt
 
 class Simulator:
 
-    def __init__(self, address='../dataset/test/memorial-dec', w=True):
+    def __init__(self, address='../dataset/test/test', w=True):
         self.step = 0
         self.end = 100000
         self.vehicles = 5
@@ -74,7 +74,8 @@ class Simulator:
                 # dx2 = self.x[i][j - 1] - self.x[i][j - 2]
                 # l += f'{round(self.x[i][j], 3)},{round(dx, 4)},{round(dx2 - dx, 4)},{round(self.y[i][j], 3)},{round(self.s[i][j], 2)} '
                 l += f'{round(self.x[i][j], 5)},{round(self.y[i][j], 5)} '
-            plt.plot(range(0, len(self.s[i])), self.s[i], label=f'Vehicle #{i + 1}')
+            plt.plot(range(0, len(self.x[i])), [self.x[i][j] - self.x[i][j - 1] if j > 0 else 0
+                                                for j in range(0, len(self.x[i]))], label=f'Vehicle #{i + 1}')
             self.file.write(l)
             self.file.write(';')
             if 'abnormal' in self.t[i]:
@@ -86,7 +87,7 @@ class Simulator:
         # plt.ylim([-1, 10])
         plt.xlabel("time (s)")
         plt.ylabel("Speed (m/s)")
-        # plt.show()
+        plt.show()
 
     def log(self):
         # if self.step == self.end - 1:
@@ -99,7 +100,7 @@ class Simulator:
                 s = traci.vehicle.getSpeed(id)
 
                 self.t[i] = traci.vehicle.getTypeID(id)
-                self.x[i].append(self.normalize(x, 2331.069758335272, 331.6160350313303)) #memorial
+                self.x[i].append(self.normalize(x, 2331.069758335272, 331.6160350313303))  # memorial
                 self.y[i].append(self.normalize(y, 1557.7461908018008, 736.1227529386199))
 
                 # self.x[i].append(self.normalize(x, 3065.339689905422, 2772.2621071169474)) #edmonton

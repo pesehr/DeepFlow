@@ -41,7 +41,7 @@ for i in range(0, 360000, 300):
         _from = 'calgary1'
         _to = 'calgary2'
         if j == a:
-            cl = 'abnormal2'
+            cl = 'abnormal1'
         f.write(
             f'<trip id=\"veh{k * 10 + j}\"  type=\"{cl}\" depart=\"{i + j * 3}.00\"  departLane=\"random\" departSpeed=\"max\" from=\"{_from}\" to=\"{_to}\" />\n')
     k += 1
