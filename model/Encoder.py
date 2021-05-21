@@ -3,8 +3,8 @@ from torch import nn
 from model.LSTM import LSTM
 
 
-class Encoder(LSTM):
-    def __init__(self, n_features, embedding_dim=20):
+class Encoder(nn.Module):
+    def __init__(self, n_features, embedding_dim):
         super(Encoder, self).__init__()
         self.n_features = n_features
         self.embedding_dim, self.hidden_dim = embedding_dim, 2 * embedding_dim

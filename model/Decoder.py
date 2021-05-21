@@ -3,8 +3,8 @@ from torch import nn
 from model.LSTM import LSTM
 
 
-class Decoder(LSTM):
-    def __init__(self, input_dim=20, n_features=1):
+class Decoder(nn.Module):
+    def __init__(self, input_dim, n_features):
         super(Decoder, self).__init__()
         self.input_dim = input_dim
         self.hidden_dim, self.n_features = 2 * input_dim, n_features

@@ -1,9 +1,9 @@
 import numpy as np
 from torch import nn, zeros, device, cat, tensor, std
-#from tslearn.metrics import gak
-#from dtaidistance import dtw
+# from tslearn.metrics import gak
+# from dtaidistance import dtw
 import torch
-#from sklearn.ensemble import IsolationForest
+# from sklearn.ensemble import IsolationForest
 
 from model.LSTM import LSTM
 from model.LSTMAutoencoder import RecurrentAutoencoder
@@ -19,7 +19,7 @@ class Siamese(LSTM):
         self.autoencoder = RecurrentAutoencoder()
 
         # self.LSTM1 = nn.LSTM(feature_len, hidden_layer_size)
-        self.lamda = 1
+        self.lamda = 10e-5
         # self.encoder1 = nn.Linear(hidden_layer_size, battle_neck)
         # self.LSTM2 = nn.LSTM(battle_neck, feature_len)
         # self.encoder2 = nn.Linear(hidden_layer_size, feature_len)
@@ -31,7 +31,7 @@ class Siamese(LSTM):
         self.label_len = label_len
         self.objects_len = objects_len
         # self.similarity = nn.CosineSimilarity(dim=0, eps=1e-7)
-        self.similarity = nn.L1Loss(reduction='mean')
+        self.similarity = nn.MSELoss(reduction='mean')
 
     def forward(self, batch):
         decoded, error = self.autoencoder(batch)
@@ -49,20 +49,18 @@ class Siamese(LSTM):
             loss1 += error
         loss2 = 0
         for i in range(0, self.objects_len):
-            for j in range(0, self.objects_len):
-                if i != j:
-                    l = self.similarity(decoded[i], decoded[j])
-                    loss2 += (-l + 1)
-        # loss1 /= 5
-        # loss2 /= 20
-        loss = loss2 + (loss1 / self.lamda)
-        return loss, loss1 / self.lamda, loss2
+            for j in range(i + 1, self.objects_len):
+                l = self.similarity(decoded[i], decoded[j])
+                loss2 += l
+        loss2 /= 10e-5
+        loss = loss1 + loss2
+        return loss, loss1, loss2
 
     def training_step(self, batch, batch_idx):
         loss, loss1, loss2 = self.validation(batch)
-        self.log('train_loss', loss, on_step=True, on_epoch=False, prog_bar=True, logger=True, sync_dist=True)
-        self.log('train_loss1', loss1, on_step=True, on_epoch=False, prog_bar=True, logger=True, sync_dist=True)
-        self.log('train_loss2', loss2, on_step=True, on_epoch=False, prog_bar=True, logger=True, sync_dist=True)
+        self.log('total loss', loss, on_step=True, on_epoch=False, prog_bar=True, logger=True, sync_dist=True)
+        self.log('reconstruct loss', loss1, on_step=True, on_epoch=False, prog_bar=True, logger=True, sync_dist=True)
+        self.log('similarity loss', loss2, on_step=True, on_epoch=False, prog_bar=True, logger=True, sync_dist=True)
         return loss
 
     def validation_step(self, batch, batch_idx):
@@ -96,16 +94,15 @@ class Siamese(LSTM):
         decoded = []
         l1 = []
         for j in range(0, self.objects_len):
-            o, d = self(batch[0][0][j])
-            l1.append(self.loss_function(batch[0][0][j][0].view(self.feature_len * len(batch[0][0][j][0])),
-                                         cat(o).view(self.feature_len * len(batch[0][0][j][0]))).item())
+            d, e = self(batch[0][0][j])
+            l1.append(e)
             decoded.append(d)
         o = []
         for i in range(0, self.objects_len):
             loss = 0
             for j in range(0, self.objects_len):
                 if i != j:
-                    l = self.similarity(decoded[i][0][0], decoded[j][0][0])
+                    l = self.similarity(decoded[i][0], decoded[j][0])
                     # l = self.similarity(batch[0][0][j][0][:min], batch[0][0][i][0][:min])
                     loss += l
                     # loss += -l + 1
@@ -115,13 +112,13 @@ class Siamese(LSTM):
         # mean = np.mean(np.array(o))
         std = torch.std(tensor([o[j].item() for j in range(0, len(o))]))
         mean = torch.mean(tensor([o[j].item() for j in range(0, len(o))]))
-        mino = min(o)
-        maxo = max(o)
+        # mino = min(o)
+        # maxo = max(o)
         for i in range(0, self.objects_len):
-            #     o[i] = ((o[i] - std) / mean).item()
-            o[i] = o[i].item() / 5
+            o[i] = ((o[i] - std) / mean).item()
+            # o[i] = o[i].item()
         # o[i] = ((o[i] - mino) / (maxo - mino)).item()
 
         # for i in range(0, self.objects_len):
-        #     self.evaluation_data.append((o[i], 1 if batch[1][i] == 1 else 0))
-        self.evaluation_data.append((4 - sum(o), 1 if sum(batch[1]).item() > -5 else 0))
+        #     self.evaluation_data.append((o[i] / 10, 1 if batch[1][i] == 1 else 0))
+        self.evaluation_data.append((sum(o) / 100, 1 if sum(batch[1]).item() > -5 else 0))

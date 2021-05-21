@@ -5,6 +5,7 @@ import pytorch_lightning as pl
 class LSTM(pl.LightningModule):
     def __init__(self):
         super().__init__()
+        self.evaluation_data = []
 
     def configure_optimizers(self):
         optimizer = optim.Adam(self.parameters(), lr=1e-3)
