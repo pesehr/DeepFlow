@@ -22,7 +22,7 @@ def main(hparams):
         model = Siamese(battle_neck=bottelNeck, lamda=lamda)
         checkpoint_callback = ModelCheckpoint(
             monitor='validation_loss',
-            filename='LSTMEncoderLSTM--{v_num:02d}-{epoch:02d}-{validation_loss:.9f}-{train_loss:.5f}',
+            filename='LSTMEncoderLSTM--{v_num:02d}-{epoch:02d}-{validation_loss:.9f}-{similarity_loss:.15f}',
         )
         early_callback = EarlyStopping(monitor='validation_loss')
         trainer = pl.Trainer(gpus=-1, max_epochs=100,
