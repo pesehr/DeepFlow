@@ -51,11 +51,11 @@ class Siamese(LSTM):
         for i in range(0, self.objects_len):
             for j in range(i + 1, self.objects_len):
                 l = self.similarity(decoded[i], decoded[j])
-                loss2 += l
+                loss2 += -l
         loss1 /= 5
         loss2 /= 10
-        loss = loss1 + loss2*100
-        return loss, loss1, loss2*100
+        loss = loss1 + loss2
+        return loss, loss1, loss2
 
     def training_step(self, batch, batch_idx):
         loss, loss1, loss2 = self.validation(batch)

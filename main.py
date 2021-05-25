@@ -25,7 +25,7 @@ def main(hparams):
             filename='LSTMEncoderLSTM--{v_num:02d}-{epoch:02d}-{validation_loss:.9f}-{similarity_loss:.15f}',
         )
         early_callback = EarlyStopping(monitor='validation_loss')
-        trainer = pl.Trainer(gpus=-1, max_epochs=100,
+        trainer = pl.Trainer(gpus=-1, max_epochs=1000,
                              callbacks=[checkpoint_callback],
                              num_nodes=1)
         trainer.fit(model=model, datamodule=datamodule)
