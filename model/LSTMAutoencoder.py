@@ -1,4 +1,4 @@
-from torch import nn
+from torch import nn, tanh
 
 from model.Decoder import Decoder
 from model.Encoder import Encoder
@@ -16,4 +16,4 @@ class RecurrentAutoencoder(nn.Module):
         seq_len = len(x[0])
         latent = self.encoder(x, seq_len)
         reconstructed = self.decoder(latent, seq_len)
-        return latent, self.loss(x[0], reconstructed)
+        return latent, tanh(self.loss(x[0], reconstructed))

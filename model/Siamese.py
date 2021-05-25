@@ -52,9 +52,10 @@ class Siamese(LSTM):
             for j in range(i + 1, self.objects_len):
                 l = self.similarity(decoded[i], decoded[j])
                 loss2 += l
-        loss2 /= 10e-5
-        loss = loss1 + loss2
-        return loss, loss1, loss2
+        loss1 /= 5
+        loss2 /= 10
+        loss = loss1 + loss2*100
+        return loss, loss1, loss2*100
 
     def training_step(self, batch, batch_idx):
         loss, loss1, loss2 = self.validation(batch)
@@ -104,9 +105,10 @@ class Siamese(LSTM):
             for j in range(0, self.objects_len):
                 if i != j:
                     l = self.similarity(decoded[i][0], decoded[j][0])
-                    # l = self.similarity(batch[0][0][j][0][:min], batch[0][0][i][0][:min])
+                    # l = self.
+                    # similarity(batch[0][0][j][0][:min], batch[0][0][i][0][:min])
                     loss += l
-                    # loss += -l + 1
+                    # loss += (l * -1) + 1
             o.append(loss)
 
         # std = np.std(np.array(o))
@@ -116,10 +118,10 @@ class Siamese(LSTM):
         # mino = min(o)
         # maxo = max(o)
         for i in range(0, self.objects_len):
-            o[i] = ((o[i] - std) / mean).item()
-            # o[i] = o[i].item()
+            # o[i] = ((o[i] - std) / mean).item()
+            o[i] = o[i].item()
         # o[i] = ((o[i] - mino) / (maxo - mino)).item()
 
         # for i in range(0, self.objects_len):
-        #     self.evaluation_data.append((o[i] / 10, 1 if batch[1][i] == 1 else 0))
-        self.evaluation_data.append((sum(o) / 100, 1 if sum(batch[1]).item() > -5 else 0))
+        #     self.evaluation_data.append((4 - o[i], 1 if batch[1][i] == 1 else 0))
+        self.evaluation_data.append((sum(o), 1 if sum(batch[1]).item() > -5 else 0))
