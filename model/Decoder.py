@@ -23,8 +23,8 @@ class Decoder(nn.Module):
         self.output_layer = nn.Linear(self.hidden_dim, n_features)
 
     def forward(self, x, seq_len):
-        x = x.repeat(seq_len, self.n_features)
-        x = x.reshape((self.n_features, seq_len, self.input_dim))
+        x = x.repeat(seq_len, 1)
+        x = x.reshape((1, seq_len, self.input_dim))
         x, (hidden_n, cell_n) = self.rnn1(x)
         x, (hidden_n, cell_n) = self.rnn2(x)
         x = x.reshape((seq_len, self.hidden_dim))
