@@ -24,7 +24,7 @@ class Simulator:
         self.end = 360000000
         self.vehicles = 5
         sumoBinary = "sumo-gui"
-        sumoCmd = [sumoBinary, "-c", "/home/sepehr/PycharmProjects/DAD/simulation/training/simulation2.xml", "--seed",
+        sumoCmd = [sumoBinary, "-c", "/home/sepehr/PycharmProjects/DAD/simulation/training/simulation.xml", "--seed",
                    '1']
         traci.start(sumoCmd)
 
@@ -88,7 +88,8 @@ class Simulator:
         # plt.ylim([-1, 10])
         plt.xlabel("time (s)")
         plt.ylabel("Speed (m/s)")
-        # plt.show()
+        plt.savefig(f'step{self.step}.pdf')
+        plt.show()
 
     def log(self):
         if self.step == self.end - 1:
@@ -132,17 +133,17 @@ class Simulator:
                         self.s[i].append(0)
 
     def over_speed(self):
-        if self.step % 300 == 20 and len(traci.vehicle.getIDList()) == self.vehicles:
+        if self.step % 300 == 50 and len(traci.vehicle.getIDList()) == self.vehicles:
             ids = traci.vehicle.getIDList()
-            for i in ids:
-                if 'abnormal' in i:
-                    traci.vehicle.setColor(ids[self.id], (255, 0, 0))
-                    traci.vehicle.setSpeedMode(ids[self.id], 0)
-            # traci.vehicle.setSpeedFactor(ids[0], traci.vehicle.getSpeedFactor(ids[0]) + 0.2)
-            # traci.vehicle.setSpeedFactor(ids[1], traci.vehicle.getSpeedFactor(ids[1]) + 0.2)
-            # traci.vehicle.setSpeedFactor(ids[2], traci.vehicle.getSpeedFactor(ids[2]) + 0.2)
-            # traci.vehicle.setSpeedFactor(ids[3], traci.vehicle.getSpeedFactor(ids[3]) + 0.2)
-            # traci.vehicle.setSpeedFactor(ids[4], traci.vehicle.getSpeedFactor(ids[4]) + 0.2)
+            # for i in ids:
+            #     if 'abnormal' in i:
+            #         traci.vehicle.setColor(ids[self.id], (255, 0, 0))
+            #         traci.vehicle.setSpeedMode(ids[self.id], 0)
+            traci.vehicle.setSpeedFactor(ids[0], traci.vehicle.getSpeedFactor(ids[0]) - 0.2)
+            traci.vehicle.setSpeedFactor(ids[1], traci.vehicle.getSpeedFactor(ids[1]) - 0.2)
+            traci.vehicle.setSpeedFactor(ids[2], traci.vehicle.getSpeedFactor(ids[2]) - 0.2)
+            traci.vehicle.setSpeedFactor(ids[3], traci.vehicle.getSpeedFactor(ids[3]) - 0.2)
+            traci.vehicle.setSpeedFactor(ids[4], traci.vehicle.getSpeedFactor(ids[4]) - 0.2)
             self.flag = True
 
     def speed_class(self):
@@ -191,7 +192,7 @@ class Simulator:
             # self.speed_class()
             # r = random.randint(0, 10)
             # if r == 2 or r == 4 or r == 6:
-            # self.over_speed()
+            self.over_speed()
             # for id in traci.vehicle.getIDList():
             #     if 'abnormal' in traci.vehicle.getTypeID(id):
             #         traci.vehicle.setSpeedMode(id, 0)

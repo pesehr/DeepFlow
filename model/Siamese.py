@@ -58,7 +58,7 @@ class Siamese(LSTM):
         for i in range(0, self.objects_len):
             for j in range(i + 1, self.objects_len):
                 l = self.similarity(decoded[i], decoded[j])
-                loss2 += -l
+                loss2 += l
         loss1 /= 5
         loss2 /= 10
         loss = loss1 + loss2

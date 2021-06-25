@@ -2,26 +2,27 @@ import os
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
+from matplotlib.font_manager import FontProperties
 from torch import tensor
 from pytorch_lightning.metrics.functional.classification import stat_scores
 from pytorch_lightning import metrics
 
 result_map = {
-    "siamese-cos": "Siamese + Cosine",
-    "siamese-mse": "Siamese + MSE",
+    "siamese-cos": "DeepFlow + Cosine",
+    "siamese-mse": "DeepFlow + MSE",
     "2": "Crop + MES",
     "iForest": "iForest",
     "gak": "GAK",
     "DTW": "DTW",
     # "crop-mse": "crop-mse",
-    "2-1": "1-1"
+    "9ave-1": "1-1"
 }
 #
 # graph = ["b6l10.0d9", "b8l10.0d9", "b10l0.1d9", "b10l10.0d9", "b10l10.0d1", "b10l10.0d5", "b12l10.0d9",
 #          "b14l10.0d9", "b14l100.0d9", "b16l10.0d9", "b18l10.0d9", "b20l10.0d9", "b4l10.0d9", "b14l0.1d9"]
 
 
-graph = ["1-1"]
+graph = ["siamese-mse", "siamese-cos", 'gak', 'iForest', 'DTW']
 # graph = ["b10l10.0d9", "gak", "DTW", "iForest"]
 # graph = ["b6l10.0d9", "b10l10.0d9", "b14l10.0d9", "b18l10.0d9", "b20l10.0d9"]
 # graph = ["DTW"]
@@ -79,11 +80,11 @@ for g in graph:
         fprate = fps / (fps + tns)
         # print(error, tps.item(), fps.item(), tns.item(), fns.item(), tps.item() / (tps.item() + fns.item()),
         #       fps.item() / (fps.item() + tns.item()))
-        print(
-            f'Error: {error} tp:{tps} fp:{fps} tn:{tns} fn:{fns}\n'
-            + f'TP Rate: {tprate * 100}% FP Rate: {fprate * 100}%'
-            + f'Accuracy: {acc * 100}% Precision:{pres * 100}% Recall:{rec * 100}% F1:{f1 * 100}%'
-              f'\n-------------------------------------------------------------------------')
+        # print(
+        #     f'Error: {error} tp:{tps} fp:{fps} tn:{tns} fn:{fns}\n'
+        #     + f'TP Rate: {tprate * 100}% FP Rate: {fprate * 100}%'
+        #     + f'Accuracy: {acc * 100}% Precision:{pres * 100}% Recall:{rec * 100}% F1:{f1 * 100}%'
+        #       f'\n-------------------------------------------------------------------------')
         if f1 > best[0]:
             best = (f1,
                     {"f1": f1, "rec": rec, "pres": pres, "tprate": tprate, "fprate": fprate, "tps": tps, "fps": fps,
@@ -115,7 +116,7 @@ for g in graph:
     all_data.append((tpr, fpr))
     all_data2.append((perss, recs))
 # Change the style of plot
-plt.style.use('seaborn-dark')
+# plt.style.use('seaborn-dark')
 
 # Create a color palette
 palette = ['#377eb8', '#ff7f00', '#4daf4a',
@@ -124,7 +125,8 @@ palette = ['#377eb8', '#ff7f00', '#4daf4a',
 linestyle = ['solid', (0, (3, 1, 1, 1)), '--', '-.', ':', '.-']
 num = 0
 
-plt.figure(figsize=(8, 5), dpi=450)
+fig = plt.subplots(1, figsize=(10, 5), dpi=450)
+ax = plt.subplot(111)
 for num in range(len(all_data)):
     d = all_data[num]
     d2 = all_data2[num]
@@ -135,11 +137,28 @@ for num in range(len(all_data)):
     # plt.xlabel("False Positive Rate")
     # plt.ylabel("True Positive Rate")
     # plt.subplot(121,  autoscale_on=True)
-    plt.plot(d2[1], d2[0], linestyle=linestyle[num], color=palette[num], linewidth=2, alpha=1,
-             label=f'{result_map[graph[num]]} (F1:{round(b[num], 3)})')
+    ax.plot(d[1], d[0], linestyle=linestyle[num], color=palette[num], linewidth=3, alpha=1,
+            label=f'{result_map[graph[num]]} (F1:{round(b[num], 3)})')
     # plt.title("Precision-Recall Curve", loc='left', fontsize=14, fontweight=1, color='black')
-    plt.xlabel("Recall")
-    plt.ylabel("Precision")
-plt.legend()
-# plt.show()
-plt.savefig('pr.pdf')
+    # plt.xlabel("Recall (Sensitivity)")
+    # plt.ylabel("Precision (PPV)")
+    plt.xlabel("False Positive Rate")
+    plt.ylabel("True Positive Rate")
+# plt.rcParams['axes.facecolor'] = 'white'
+# plt.rcParams['axes.edgecolor'] = 'white'
+# plt.rcParams['axes.grid'] = True
+# plt.rcParams['grid.alpha'] = 0.5
+# plt.rcParams['grid.color'] = "#000"
+# plt.rc('grid', linestyle="-", color='#000')
+
+
+plt.grid(b=True, color='#ccc', alpha=1, which='major', linestyle="-"),
+# plt.minorticks_on()
+plt.grid(b=True, which='minor', color='#999999', linestyle='--', alpha=0.5)
+fontP = FontProperties()
+fontP.set_size('medium')
+box = ax.get_position()
+ax.set_position([box.x0, box.y0, box.width * 0.7, box.height])
+ax.legend(prop=fontP, ncol=2)
+plt.savefig('roc.pdf')
+plt.show()
