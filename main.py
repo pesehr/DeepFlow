@@ -9,7 +9,7 @@ from pytorch_lightning.callbacks.early_stopping import EarlyStopping
 import optparse
 import re
 from pytorch_lightning.loggers import WandbLogger
-
+import wandb
 
 def main(hparams):
     bottelNeck = int(hparams[0].hidden)
@@ -19,6 +19,7 @@ def main(hparams):
     test = bool(hparams[0].test)
     print(bottelNeck, lamda, ds, test)
     datamodule = DrivingDataMadule(ds, 5800, 176, 10000)
+    wandb.init(project="phase1")
     wandb_logger = WandbLogger()
     if not test:
         model = Siamese(battle_neck=bottelNeck, lamda=lamda)
