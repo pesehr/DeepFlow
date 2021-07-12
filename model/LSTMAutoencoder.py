@@ -6,10 +6,10 @@ from model.LSTM import LSTM
 
 
 class RecurrentAutoencoder(nn.Module):
-    def __init__(self, n_features=1, embedding_dim=40):
+    def __init__(self, n_features=1, latent_size=40):
         super(RecurrentAutoencoder, self).__init__()
-        self.encoder = Encoder(n_features, embedding_dim)
-        self.decoder = Decoder(embedding_dim, n_features)
+        self.encoder = Encoder(n_features, latent_size)
+        self.decoder = Decoder(latent_size, n_features)
         self.loss = nn.MSELoss(reduction='mean')
 
     def forward(self, x):

@@ -15,13 +15,14 @@ def main(hparams):
     bottelNeck = int(hparams[0].hidden)
     lamda = float(hparams[0].lamda)
     ds = hparams[0].ds
-    fun = int(hparams[0].fun)
     test = bool(hparams[0].test)
     print(bottelNeck, lamda, ds, test)
+
     datamodule = DrivingDataMadule(ds, 5800, 176, 10000)
     wandb_logger = WandbLogger()
+
     if not test:
-        model = Siamese(battle_neck=bottelNeck, lamda=lamda)
+        model = Siamese(latent_size=bottelNeck, lamda=lamda)
         checkpoint_callback = ModelCheckpoint(
             monitor='validation_loss',
             filename='LSTMEncoderLSTM--{v_num:02d}-{epoch:02d}-{validation_loss:.9f}-{similarity_loss:.15f}',
@@ -43,11 +44,11 @@ def main(hparams):
 
                     model = Siamese.load_from_checkpoint(
                         f'checkpoint/{filename}/checkpoints/{c}',
-                        battle_neck=bottelNeck, lamda=lamda, fun=fun
+                        latent_size=bottelNeck, lamda=lamda,
                     )
 
                     trainer = pl.Trainer(gpus=-1, max_epochs=100, accelerator='dp',
-                                         callbacks=[LSTMCallback(name=f'{ds}-{fun}')],
+                                         callbacks=[LSTMCallback(name=f'xy')],
                                          num_nodes=1)
                     trainer.test(model=model, test_dataloaders=datamodule.test_dataloader())
 
